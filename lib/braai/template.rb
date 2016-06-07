@@ -10,8 +10,8 @@ class Braai::Template
     @fallback = self.class.fallback
   end
 
-  def render(attributes = {})
-    context = Braai::Context.new(@template, self, attributes)
+  def render(attributes = {}, apply_matchers = {})
+    context = Braai::Context.new(@template, self, attributes, apply_matchers)
     context.render
   end
 

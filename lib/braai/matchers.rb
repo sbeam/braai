@@ -11,16 +11,17 @@ module Braai::Matchers
     @matchers ||= reset!
   end
 
-  def map(regex, handler = nil, &block)
-    @matchers = {regex.to_s => handler || block}.merge(self.matchers)
+  def map(regex, handler = nil, name = nil, &block)
+    name ||= regex.to_s
+    @matchers = { name => [ regex, (handler || block) ] }.merge(self.matchers)
   end
 
   def add_fallback(regex, handler=nil, &block)
     @fallback = { :regex => regex.to_s, :handler => handler || block }
   end
 
-  def unmap(regex)
-    self.matchers.delete(regex.to_s)
+  def unmap(name_or_regex)
+    self.matchers.delete(name_or_regex)
   end
 
   def clear!

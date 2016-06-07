@@ -25,6 +25,12 @@ describe Braai::Template do
       Braai::Template.matchers.must_include(greet_regex.to_s)
     end
 
+    it "lets you register a named matcher" do
+      Braai::Template.matchers.wont_include('foo')
+      Braai::Template.map(greet_regex, nil, 'foo', &greet_matcher)
+      Braai::Template.matchers.must_include('foo')
+    end
+
     it "takes a class that responds to call" do
       Braai::Template.map(greet_regex, GreetHandler)
       Braai::Template.matchers.must_include(greet_regex.to_s)
@@ -58,6 +64,32 @@ describe Braai::Template do
       template = "<h1>{{greet}}</h1><h2>{{ greet }}</h2>"
       res = Braai::Template.new(template).render(greet: "Hi Mark")
       res.must_equal("<h1>Hi Mark</h1><h2>Hi Mark</h2>")
+    end
+
+    describe 'only handling certain matchers' do
+      before do
+        Braai::Template.map(/{{ heading }}/i, nil, 'heading') { "Your Opinion?" }
+        Braai::Template.map(/{{ useless_image }}/i, nil, 'useless_image') { '<img src="stock_photo.jpg" />' }
+        Braai::Template.map(/{{ adjective }}/i, nil, 'adjective') do |template, key, matches|
+          "EFFING #{template.attributes[:adjective].upcase}"
+        end
+        Braai::Template.add_fallback(/{{[^}]+}}/i) { "<!-- blop -->" }
+      end
+
+      it "runs all matchers if not specified" do
+        template = "<h1>{{ heading }}</h1>{{ useless_image }} Braai is {{ adjective }}"
+
+        res = Braai::Template.new(template).render({adjective: 'fantastic'})
+        res.must_equal('<h1>Your Opinion?</h1><img src="stock_photo.jpg" /> Braai is EFFING FANTASTIC')
+      end
+
+      it "only runs specified matchers if given in apply_matchers" do
+        template = "<h1>{{ heading }}</h1>{{ useless_image }} Braai is {{ adjective }}"
+
+        res = Braai::Template.new(template).render({adjective: 'fantastic'}, ['heading', 'adjective'])
+        res.must_equal("<h1>Your Opinion?</h1><!-- blop --> Braai is EFFING FANTASTIC")
+      end
+
     end
 
 

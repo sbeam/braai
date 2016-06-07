@@ -7,7 +7,7 @@ describe Braai::Matchers do
 
     it "maps a new matcher" do
       map("foo") {}
-      matchers.must_include("foo")
+      matchers.keys.must_include("foo")
     end
 
     it "makes the latest matcher the first matcher in the list" do
@@ -22,9 +22,9 @@ describe Braai::Matchers do
 
     it "unmaps a matcher" do
       map("foo") {}
-      matchers.must_include("foo")
+      matchers.keys.must_include("foo")
       unmap("foo")
-      matchers.wont_include("foo")
+      matchers.keys.wont_include("foo")
     end
 
   end

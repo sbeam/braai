@@ -2,18 +2,24 @@ class Braai::Context
 
   attr_accessor :attributes, :matchers, :fallback, :substrate
 
-  def initialize(substrate, template, attributes = {})
+  def initialize(substrate, template, attributes = {}, apply_matchers = [])
     self.attributes = HashWithIndifferentAccess.new(attributes)
     self.substrate = substrate.dup
-    self.matchers = template.matchers
+
+    self.matchers = if apply_matchers.first
+                      template.matchers.select { |k, v| apply_matchers.include?(k) }
+                    else
+                      template.matchers
+                    end
+
     self.fallback = template.fallback
   end
 
   def render
     begin
 
-      self.matchers.each do |regex, matcher|
-        substitute(regex, matcher)
+      self.matchers.each do |name, regex_and_handler|
+        substitute(*regex_and_handler)
       end
 
       if self.fallback
